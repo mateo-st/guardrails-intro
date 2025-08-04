@@ -2,12 +2,12 @@ from typing import Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
 
-from experiments.langgraph_with_guardrails.utils.nodes import (
+from experiments.handmade_langgraph_grs.utils.nodes import (
     call_model,
     should_continue,
     tool_node,
 )
-from experiments.langgraph_with_guardrails.utils.state import AgentState
+from experiments.handmade_langgraph_grs.utils.state import AgentState
 
 
 # Define the config

@@ -5,7 +5,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
-from experiments.langgraph_with_guardrails.utils.tools import tools
+from experiments.handmade_langgraph_grs.utils.tools import tools
 
 
 @lru_cache(maxsize=4)

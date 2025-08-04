@@ -2,33 +2,28 @@ from typing import Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
 
-from experiments.langgraph_with_guardrails.utils.nodes import (
+from experiments.handmade_langgraph_grs.utils.nodes import (
     call_model,
+    english_guardrail,
     should_continue,
     tool_node,
-    weather_guardrail,
 )
-from experiments.langgraph_with_guardrails.utils.state import AgentGuardrailBeforeState
+from experiments.handmade_langgraph_grs.utils.state import AgentGuardrailAfterState
 
 
 # Define logic to determine whether question is about the weather
-def is_about_weather(
-    state: AgentGuardrailBeforeState,
-) -> Literal["hardcoded_response", "agent"]:
-    if not state["about_weather"]:
+def response_in_english(
+    state: AgentGuardrailAfterState,
+) -> Literal["hardcoded_response", END]:
+    if not state["is_english"]:
         return "hardcoded_response"
     else:
-        return "agent"
+        return END
 
 
 def hardcoded_response(state):
     return {
-        "messages": [
-            {
-                "role": "assistant",
-                "content": "sorry I can only answer questions about weather",
-            }
-        ]
+        "messages": [{"role": "assistant", "content": "Unable to process question"}]
     }
 
 
@@ -38,19 +33,17 @@ class GraphConfig(TypedDict):
 
 
 # Define a new graph
-workflow = StateGraph(AgentGuardrailBeforeState, config_schema=GraphConfig)
+workflow = StateGraph(AgentGuardrailAfterState, config_schema=GraphConfig)
 
 # Define the two nodes we will cycle between
 workflow.add_node("agent", call_model)
 workflow.add_node("action", tool_node)
-workflow.add_node(weather_guardrail)
+workflow.add_node(english_guardrail)
 workflow.add_node(hardcoded_response)
 
 # Set the entrypoint as `agent`
 # This means that this node is the first one called
-workflow.set_entry_point("weather_guardrail")
-
-workflow.add_conditional_edges("weather_guardrail", is_about_weather)
+workflow.set_entry_point("agent")
 
 # We now add a conditional edge
 workflow.add_conditional_edges(
@@ -69,13 +62,14 @@ workflow.add_conditional_edges(
         # If `tools`, then we call the tool node.
         "continue": "action",
         # Otherwise we finish.
-        "end": END,
+        "end": "english_guardrail",
     },
 )
 
 # We now add a normal edge from `tools` to `agent`.
 # This means that after `tools` is called, `agent` node is called next.
 workflow.add_edge("action", "agent")
+workflow.add_conditional_edges("english_guardrail", response_in_english)
 workflow.add_edge("hardcoded_response", END)
 
 # Finally, we compile it!
