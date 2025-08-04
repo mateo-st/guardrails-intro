@@ -2,34 +2,12 @@ from typing import Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
 
-from experiments.handmade_langgraph_grs.utils.nodes import (
+from experiments.handmade_langgraph.utils.nodes import (
     call_model,
     should_continue,
     tool_node,
-    weather_guardrail,
 )
-from experiments.handmade_langgraph_grs.utils.state import AgentGuardrailBeforeState
-
-
-# Define logic to determine whether question is about the weather
-def is_about_weather(
-    state: AgentGuardrailBeforeState,
-) -> Literal["hardcoded_response", "agent"]:
-    if not state["about_weather"]:
-        return "hardcoded_response"
-    else:
-        return "agent"
-
-
-def hardcoded_response(state):
-    return {
-        "messages": [
-            {
-                "role": "assistant",
-                "content": "sorry I can only answer questions about weather",
-            }
-        ]
-    }
+from experiments.handmade_langgraph.utils.state import AgentState
 
 
 # Define the config
@@ -38,19 +16,15 @@ class GraphConfig(TypedDict):
 
 
 # Define a new graph
-workflow = StateGraph(AgentGuardrailBeforeState, config_schema=GraphConfig)
+workflow = StateGraph(AgentState, config_schema=GraphConfig)
 
 # Define the two nodes we will cycle between
 workflow.add_node("agent", call_model)
 workflow.add_node("action", tool_node)
-workflow.add_node(weather_guardrail)
-workflow.add_node(hardcoded_response)
 
 # Set the entrypoint as `agent`
 # This means that this node is the first one called
-workflow.set_entry_point("weather_guardrail")
-
-workflow.add_conditional_edges("weather_guardrail", is_about_weather)
+workflow.set_entry_point("agent")
 
 # We now add a conditional edge
 workflow.add_conditional_edges(
@@ -76,7 +50,6 @@ workflow.add_conditional_edges(
 # We now add a normal edge from `tools` to `agent`.
 # This means that after `tools` is called, `agent` node is called next.
 workflow.add_edge("action", "agent")
-workflow.add_edge("hardcoded_response", END)
 
 # Finally, we compile it!
 # This compiles it into a LangChain Runnable,

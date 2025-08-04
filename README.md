@@ -32,8 +32,8 @@ This project uses [uv](https://github.com/astral-sh/uv) for Python versioning, e
 - Explore the `docs/` directory for course notes and summaries.
 - Check the `examples/` directory for the course's code samples.
 - Look into the `experiments/` directory for quick, small explorations on how to implement guardrails.
-   - `experiments/handmade_langgraph_gr/` contains a hand-made implementation of guardrails using LangGraph.
-   - `experiments/langchain_guardrailsai_gr/` integrates LangChain with GuardrailsAI for a more structured approach.
+   - `experiments/handmade_langgraph/` contains a hand-made implementation of guardrails using LangGraph.
+   - `experiments/integrated_langgraph_guardrailsai/` integrates LangChain with GuardrailsAI for a more structured approach.
 
 ## Acknowledgments
 
