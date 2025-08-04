@@ -27,6 +27,15 @@ This project uses [uv](https://github.com/astral-sh/uv) for Python versioning, e
    uv sync
    ```
 
+3. Add the following API keys in a `.env` file. 
+
+   ```
+   ANTHROPIC_API_KEY=...
+   TAVILY_API_KEY=...
+   OPENAI_API_KEY=...
+   ```
+
+
 ## Repo Structure
 
 - Explore the `docs/` directory for course notes and summaries.
